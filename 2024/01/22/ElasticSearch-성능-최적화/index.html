@@ -19,23 +19,28 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"facewise.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 
-    <meta property="og:type" content="website">
-<meta property="og:title" content="facewiseLog">
-<meta property="og:url" content="https://facewise.github.io/index.html">
+    <meta name="description" content="1. Heap Size일반적으로 메모리의 50%를 힙으로 할당하는 것을 권장하지만 힙 사이즈가 32G 이상으로 커질 경우 단점이 있다. 힙 사이즈가 크다고 무조건 성능이 좋아지는 것이 아니다. 오히려 32G 이상의 힙 사이즈는 성능을 저하시킨다고 한다. 이건 비단 ES 뿐만 아니라 JVM을 사용하는 모든 앱이라면 공통으로 적용되는 점이다. 이유JVM은 OO">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ElasticSearch 성능 최적화">
+<meta property="og:url" content="https://facewise.github.io/2024/01/22/ElasticSearch-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94/index.html">
 <meta property="og:site_name" content="facewiseLog">
+<meta property="og:description" content="1. Heap Size일반적으로 메모리의 50%를 힙으로 할당하는 것을 권장하지만 힙 사이즈가 32G 이상으로 커질 경우 단점이 있다. 힙 사이즈가 크다고 무조건 성능이 좋아지는 것이 아니다. 오히려 32G 이상의 힙 사이즈는 성능을 저하시킨다고 한다. 이건 비단 ES 뿐만 아니라 JVM을 사용하는 모든 앱이라면 공통으로 적용되는 점이다. 이유JVM은 OO">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-01-22T07:51:38.000Z">
+<meta property="article:modified_time" content="2024-01-22T07:59:31.546Z">
 <meta property="article:author" content="Yonghyun Kim">
+<meta property="article:tag" content="ElasticSearch">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://facewise.github.io/">
+<link rel="canonical" href="https://facewise.github.io/2024/01/22/ElasticSearch-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":true,"isPost":false,"lang":"en","comments":"","permalink":"","path":"index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://facewise.github.io/2024/01/22/ElasticSearch-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94/","path":"2024/01/22/ElasticSearch-성능-최적화/","title":"ElasticSearch 성능 최적화"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>facewiseLog</title>
+<title>ElasticSearch 성능 최적화 | facewiseLog</title>
   
 
 
@@ -68,7 +73,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">facewiseLog</h1>
+      <p class="site-title">facewiseLog</p>
       <i class="logo-line"></i>
     </a>
   </div>
@@ -94,7 +99,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Table of Contents
@@ -107,6 +112,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-Heap-Size"><span class="nav-number">1.</span> <span class="nav-text">1. Heap Size</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%EC%9D%B4%EC%9C%A0"><span class="nav-number">1.1.</span> <span class="nav-text">이유</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-Mapping"><span class="nav-number">2.</span> <span class="nav-text">2. Mapping</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-Shard"><span class="nav-number">3.</span> <span class="nav-text">3. Shard</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%EC%83%A4%EB%93%9C%EC%9D%98-%EA%B0%AF%EC%88%98"><span class="nav-number">3.1.</span> <span class="nav-text">샤드의 갯수</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%EC%83%A4%EB%93%9C%EC%9D%98-%EC%9A%A9%EB%9F%89"><span class="nav-number">3.2.</span> <span class="nav-text">샤드의 용량</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ElasticSearch-8-3-%EB%8A%94-%EB%8B%A4%EB%A5%B4%EB%8B%A4"><span class="nav-number">3.3.</span> <span class="nav-text">ElasticSearch &gt;&#x3D; 8.3 는 다르다!</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%EC%83%88%EB%A1%9C%EC%9A%B4-%ED%8C%81"><span class="nav-number">3.3.1.</span> <span class="nav-text">새로운 팁</span></a></li></ol></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -146,16 +152,17 @@
 
     </div>
 
-    <div class="main-inner index posts-expand">
+    <div class="main-inner post posts-expand">
 
-    
+
+  
 
 
 <div class="post-block">
   
   
 
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
     <link itemprop="mainEntityOfPage" href="https://facewise.github.io/2024/01/22/ElasticSearch-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -169,13 +176,13 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | facewiseLog">
+      <meta itemprop="name" content="ElasticSearch 성능 최적화 | facewiseLog">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/01/22/ElasticSearch-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94/" class="post-title-link" itemprop="url">ElasticSearch 성능 최적화</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          ElasticSearch 성능 최적화
+        </h1>
 
         <div class="post-meta-container">
           <div class="post-meta">
@@ -207,8 +214,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="1-Heap-Size"><a href="#1-Heap-Size" class="headerlink" title="1. Heap Size"></a>1. Heap Size</h1><p>일반적으로 메모리의 50%를 힙으로 할당하는 것을 권장하지만 힙 사이즈가 32G 이상으로 커질 경우 단점이 있다.</p>
+    <div class="post-body" itemprop="articleBody"><h1 id="1-Heap-Size"><a href="#1-Heap-Size" class="headerlink" title="1. Heap Size"></a>1. Heap Size</h1><p>일반적으로 메모리의 50%를 힙으로 할당하는 것을 권장하지만 힙 사이즈가 32G 이상으로 커질 경우 단점이 있다.</p>
 <p>힙 사이즈가 크다고 무조건 성능이 좋아지는 것이 아니다. 오히려 <strong>32G 이상의 힙 사이즈는 성능을 저하시킨다</strong>고 한다.</p>
 <p>이건 비단 ES 뿐만 아니라 JVM을 사용하는 모든 앱이라면 공통으로 적용되는 점이다.</p>
 <h2 id="이유"><a href="#이유" class="headerlink" title="이유"></a>이유</h2><p>JVM은 OOPS(Ordinary Object Pointers) 라는 것으로 메모리의 주소를 관리한다. C의 포인터랑 비슷한 개념이다.</p>
@@ -263,7 +269,6 @@
 <p><strong>1000 x 4000 x 1kB &#x3D; 4GB</strong>에 <strong>추가로 0.5GB</strong>를 할당해 <strong>4.5GB 이상</strong>의 힙 크기를 할당해줄 것을 권장하고 있다.</p>
 <p>또, 샤드 당 데이터의 크기는 10GB~50GB를 권장하고 있다.</p>
 
-      
     </div>
 
     
@@ -271,199 +276,25 @@
     
 
     <footer class="post-footer">
-        <div class="post-eof"></div>
-      
+          <div class="post-tags">
+              <a href="/tags/ElasticSearch/" rel="tag"># ElasticSearch</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/01/05/%ED%8E%98%EC%9D%B4%EC%A7%95-%EC%BF%BC%EB%A6%AC-%ED%8C%8C%ED%97%A4%EC%B3%90-%EB%B3%B4%EA%B8%B0-1-Row-count%EA%B9%8C%EC%A7%80-%EA%B0%99%EC%9D%B4-%EC%A1%B0%ED%9A%8C/" rel="prev" title="페이징 쿼리 파헤쳐 보기 - 1. Row count까지 같이 조회">
+                  <i class="fa fa-angle-left"></i> 페이징 쿼리 파헤쳐 보기 - 1. Row count까지 같이 조회
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
     </footer>
   </article>
 </div>
 
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://facewise.github.io/2024/01/05/%ED%8E%98%EC%9D%B4%EC%A7%95-%EC%BF%BC%EB%A6%AC-%ED%8C%8C%ED%97%A4%EC%B3%90-%EB%B3%B4%EA%B8%B0-1-Row-count%EA%B9%8C%EC%A7%80-%EA%B0%99%EC%9D%B4-%EC%A1%B0%ED%9A%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Yonghyun Kim">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="facewiseLog">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | facewiseLog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/01/05/%ED%8E%98%EC%9D%B4%EC%A7%95-%EC%BF%BC%EB%A6%AC-%ED%8C%8C%ED%97%A4%EC%B3%90-%EB%B3%B4%EA%B8%B0-1-Row-count%EA%B9%8C%EC%A7%80-%EA%B0%99%EC%9D%B4-%EC%A1%B0%ED%9A%8C/" class="post-title-link" itemprop="url">페이징 쿼리 파헤쳐 보기 - 1. Row count까지 같이 조회</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-01-05 12:50:44" itemprop="dateCreated datePublished" datetime="2024-01-05T12:50:44+09:00">2024-01-05</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2024-01-11 18:31:59" itemprop="dateModified" datetime="2024-01-11T18:31:59+09:00">2024-01-11</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/SQL/" itemprop="url" rel="index"><span itemprop="name">SQL</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="페이징-쿼리-파헤쳐-보기-1-Row-count까지-같이-조회"><a href="#페이징-쿼리-파헤쳐-보기-1-Row-count까지-같이-조회" class="headerlink" title="페이징 쿼리 파헤쳐 보기 - 1. Row count까지 같이 조회"></a>페이징 쿼리 파헤쳐 보기 - 1. Row count까지 같이 조회</h1><p>사내 관리자 페이지를 개발하면서 페이징 처리할 데이터와 페이징 Row count를 한 번에 조회할 수 있는 방법을 고민했던 내용을 정리해본다</p>
-<h2 id="OVER-사용"><a href="#OVER-사용" class="headerlink" title="OVER () 사용"></a>OVER () 사용</h2><p>StackOverflow에 이 내용으로 물어보면 가장 처음 나오는 결과가 OVER () 를 사용하는 방법이다.</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ...</span><br><span class="line">      , total_count <span class="operator">=</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">OVER</span>()</span><br><span class="line"><span class="comment">-- 또는, COUNT(*) OVER() AS total_count</span></span><br><span class="line"><span class="keyword">FROM</span> ...</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> ...</span><br><span class="line"><span class="keyword">OFFSET</span> <span class="number">120</span> <span class="keyword">ROWS</span></span><br><span class="line"><span class="keyword">FETCH</span> NEXT <span class="number">10</span> <span class="keyword">ROWS</span> <span class="keyword">ONLY</span>;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://facewise.github.io/2024/01/02/2024-01-02-initial-log/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Yonghyun Kim">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="facewiseLog">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | facewiseLog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2024/01/02/2024-01-02-initial-log/" class="post-title-link" itemprop="url">Initial log</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-01-02 23:00:00" itemprop="dateCreated datePublished" datetime="2024-01-02T23:00:00+09:00">2024-01-02</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2024-01-03 18:25:34" itemprop="dateModified" datetime="2024-01-03T18:25:34+09:00">2024-01-03</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/note/" itemprop="url" rel="index"><span itemprop="name">note</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="Initial-log…"><a href="#Initial-log…" class="headerlink" title="Initial log…"></a>Initial log…</h1><ul>
-<li>지금까지의 나는<ul>
-<li>무계획</li>
-<li>즉흥적</li>
-<li>머리로, 속으로 기억하고 있으면 된 것</li>
-</ul>
-</li>
-<li>앞으로의 나는<ul>
-<li>꾸준하게</li>
-<li>기록하고</li>
-<li>단기 목표를 세우고</li>
-<li>널리 퍼뜨리는</li>
-</ul>
-</li>
-</ul>
-<p>2024년, 달라지기 위해 첫 로그를 적는다</p>
-<p>‘나 안내서’를 작성하고<br>‘느낀 점’을 기록하자<br>누구에게 보여주기 위한 것이 아닌 나를 위해서</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
 
 
 
