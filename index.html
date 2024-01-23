@@ -184,9 +184,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2024-01-22 16:51:38 / Modified: 16:59:31" itemprop="dateCreated datePublished" datetime="2024-01-22T16:51:38+09:00">2024-01-22</time>
+      <time title="Created: 2024-01-22 16:51:38" itemprop="dateCreated datePublished" datetime="2024-01-22T16:51:38+09:00">2024-01-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2024-01-23 15:08:18" itemprop="dateModified" datetime="2024-01-23T15:08:18+09:00">2024-01-23</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -208,7 +214,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="1-Heap-Size"><a href="#1-Heap-Size" class="headerlink" title="1. Heap Size"></a>1. Heap Size</h1><p>일반적으로 메모리의 50%를 힙으로 할당하는 것을 권장하지만 힙 사이즈가 32G 이상으로 커질 경우 단점이 있다.</p>
+          <h1 id="Heap-Size"><a href="#Heap-Size" class="headerlink" title="Heap Size"></a>Heap Size</h1><p>일반적으로 메모리의 50%를 힙으로 할당하는 것을 권장하지만 힙 사이즈가 32G 이상으로 커질 경우 단점이 있다.</p>
 <p>힙 사이즈가 크다고 무조건 성능이 좋아지는 것이 아니다. 오히려 <strong>32G 이상의 힙 사이즈는 성능을 저하시킨다</strong>고 한다.</p>
 <p>이건 비단 ES 뿐만 아니라 JVM을 사용하는 모든 앱이라면 공통으로 적용되는 점이다.</p>
 <h2 id="이유"><a href="#이유" class="headerlink" title="이유"></a>이유</h2><p>JVM은 OOPS(Ordinary Object Pointers) 라는 것으로 메모리의 주소를 관리한다. C의 포인터랑 비슷한 개념이다.</p>
@@ -218,33 +224,30 @@
 <p>하지만 힙 사이즈가 32G보다 커질 경우 이 Compressed OOPS 방식을 사용하지 않고 그냥 OOPS를 사용하여 메모리 주소를 찾는데 매우 오래 걸리게 된다.</p>
 <p>Compressed OOPS 방식의 35bit 주소에서 offset 3bit를 버리기 위해 shift left 3 ( &lt;&lt; 3 ) 연산을 하게 되는데 이때 메모리 주소의 시작점이 0이 아니라면 여기에 메모리 시작 주소를 더해야 하는 연산이 추가로 들어간다. (Non-zero based)</p>
 <p>하지만 메모리 주소의 시작점이 0이라면 shift left 3 (&lt;&lt; 3)만 해도 원래 주소를 알아낼 수 있다. (Zero based)</p>
-<p>이는 JVM으로 oops 방식을 확인하는 명령어로 확인해볼 수 있다.</p>
+<p>이는 JVM으로 oops 방식을 확인하는 명령어로 확인해볼 수 있다.<br><br></p>
 <ul>
-<li>메모리가 64G인 시스템에서 힙을 31G로 준다면?</li>
+<li>메모리가 64G인 시스템에서 힙을 31G로 준다면?<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx31G -XX:+UnlockDiagnosticVMOptions -Xlog:gc+heap+coops=debug -version</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Heap address: 0x0000001000800000, size: 31744 MB, Compressed Oops mode: Non-zero disjoint base: 0x0000001000000000, Oop <span class="built_in">shift</span> amount: 3</span><br></pre></td></tr></table></figure></li>
 </ul>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx31G -XX:+UnlockDiagnosticVMOptions -Xlog:gc+heap+coops=debug -version</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Heap address: 0x0000001000800000, size: 31744 MB, Compressed Oops mode: Non-zero disjoint base: 0x0000001000000000, Oop <span class="built_in">shift</span> amount: 3</span><br></pre></td></tr></table></figure>
-
-<p>이런 식으로 base 주소가 0이 아님을 확인할 수 있고 Non-zero base라고 표시된다.</p>
+<p>이런 식으로 base 주소가 0이 아님을 확인할 수 있고 Non-zero base라고 표시된다.<br><br></p>
 <ul>
-<li>이번엔 힙을 30G로 준다면</li>
+<li>이번엔 힙을 30G로 준다면<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx30G -XX:+UnlockDiagnosticVMOptions -Xlog:gc+heap+coops=debug -version</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Heap address: 0x0000000080000000, size: 30720 MB, Compressed Oops mode: Zero based, Oop <span class="built_in">shift</span> amount: 3</span><br></pre></td></tr></table></figure></li>
 </ul>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx30G -XX:+UnlockDiagnosticVMOptions -Xlog:gc+heap+coops=debug -version</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Heap address: 0x0000000080000000, size: 30720 MB, Compressed Oops mode: Zero based, Oop <span class="built_in">shift</span> amount: 3</span><br></pre></td></tr></table></figure>
-
 <p>Zero based 모드라고 표시되는 것을 확인할 수 있다.</p>
-<p>그리고 ES는 OS의 나머지 여유 메모리를 파일시스템 캐시로 이용하기 때문에 이 캐시의 크기를 더 늘리는 것이 더 좋은 성능을 낼 수 있다고 한다.</p>
-<p><strong>즉, OS의 메모리 절반을 힙 사이즈로 할당하면 나머지 절반은 ES가 캐시로 사용한다는 얘기.</strong></p>
+<p>그리고 ES는 OS의 나머지 여유 메모리를 파일시스템 캐시로 이용하기 때문에 이 캐시의 크기를 더 늘리는 것이 더 좋은 성능을 낼 수 있다고 한다.<br><br><br><strong>즉, OS의 메모리 절반을 힙 사이즈로 할당하면 나머지 절반은 ES가 캐시로 사용한다는 얘기.</strong></p>
 <p>또 다른 이유로는 힙 사이즈가 클 경우 gc가 빈번하게 일어나는 앱에서는 힙에 비례하여 cpu 사용량이 증가하고 stop the world 시간이 늘어나기 때문에 너무 큰 힙 사이즈는 좋지 않을 수 있다.</p>
 <p>이건 JVM 애플리케이션의 공통 사항이다.</p>
-<h1 id="2-Mapping"><a href="#2-Mapping" class="headerlink" title="2. Mapping"></a>2. Mapping</h1><p>인덱스를 생성하기 전에 인덱스 템플릿을 생성하고 매핑을 적절히 해주는 것이 좋다.</p>
+<br>
+
+<h1 id="Mapping"><a href="#Mapping" class="headerlink" title="Mapping"></a>Mapping</h1><p>인덱스를 생성하기 전에 인덱스 템플릿을 생성하고 매핑을 적절히 해주는 것이 좋다.</p>
 <p>특히 string 필드는 ES에서 기본적으로 text와 keyword 타입을 둘다 생성하기 때문에 용량을 낭비하고 검색 성능이 저하된다.</p>
 <p>따라서 텍스트 분석이 필요하고 검색 기능이 필요한 필드는 text만 매핑하고 나머지 필터링을 위한 필드는 keyword로 매핑하여 불필요한 연산이나 용량을 제거해주는 것이 좋다.</p>
 <p><em><strong>하지만 반대로 Mapping에 대해 자세히 이해하지 못하고 획일화된 Mapping만 사용한다면 NoSQL의 장점을 활용하지 못하게 된다.</strong></em></p>
 <p>인덱스의 Mapping을 변경하는 작업은 그렇게 어려운 일이 아니므로 조금씩 공부하면서 변경하는 것도 좋다.</p>
-<h1 id="3-Shard"><a href="#3-Shard" class="headerlink" title="3. Shard"></a>3. Shard</h1><p>샤드는 기본적으로 인덱스 1개와 매핑되어 있고 샤드의 갯수는 인덱스 1개당 1개 이상이다. (1대다 관계)</p>
+<br>
+
+<h1 id="Shard"><a href="#Shard" class="headerlink" title="Shard"></a>Shard</h1><p>샤드는 기본적으로 인덱스 1개와 매핑되어 있고 샤드의 갯수는 인덱스 1개당 1개 이상이다. (1대다 관계)</p>
 <p>노드가 여러 개인 경우 샤드를 분산배치함으로써 클러스터링, 로드 밸런싱 등이 가능해진다.</p>
 <h2 id="샤드의-갯수"><a href="#샤드의-갯수" class="headerlink" title="샤드의 갯수"></a>샤드의 갯수</h2><p>ES에서는 노드 1개당 샤드의 갯수가 너무 많으면 좋지 않다고 한다.</p>
 <p><strong>샤드의 갯수가 너무 많으면 마스터 노드가 샤드를 추적할 때 연산량이 많아져 성능이 저하된다.</strong></p>
@@ -257,6 +260,8 @@
 <p>50MB의 샤드와 50GB 샤드의 세그먼트 크기는 별 차이가 없는데, 전자는 1000개의 세그먼트를 합치는 과정에서 엄청난 리소스를 필요로 하기 때문이다.</p>
 <p>그래서 이미 샤드의 갯수가 많아졌을 경우 <strong>강제 병합</strong> 과정을 통해서 세그먼트를 병합해 오버헤드를 줄여 성능을 개선할 수 있다.</p>
 <p>하지만 또한, 50GB 이상으로 너무 크게 하지 않을 것을 권장하고 있다.</p>
+<br>
+
 <h2 id="ElasticSearch-8-3-는-다르다"><a href="#ElasticSearch-8-3-는-다르다" class="headerlink" title="ElasticSearch &gt;&#x3D; 8.3 는 다르다!"></a>ElasticSearch &gt;&#x3D; 8.3 는 다르다!</h2><p>해당 프로젝트를 진행한 날짜가 2022년이고 당시에 ES 7.10 버전을 기준으로 작성했었는데, 최근 ES 문서를 확인해보니까 8.3 버전 이상부터는 **샤드의 갯수 규칙 (힙 1GB 당 20개 미만)**이 다르다고 한다!</p>
 <h3 id="새로운-팁"><a href="#새로운-팁" class="headerlink" title="새로운 팁"></a>새로운 팁</h3><p>8.3 버전 이상에서 ES의 경험 법칙에 따르면 <strong>각 데이터 노드의 인덱스 당 매핑된 필드 수 X 1kB + 0.5GB</strong> 를 권장한다고 한다.</p>
 <p>예를 들어서, 데이터 노드가 1000개의 인덱스 샤드를 보유하고 있고, 각 인덱스가 4000개의 필드가 매핑되어 있다면</p>
