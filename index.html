@@ -123,18 +123,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">6</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-count">2</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -159,6 +159,234 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://facewise.github.io/2024/04/11/spring-aop-pointcut/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yonghyun Kim">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="facewiseLog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | facewiseLog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2024/04/11/spring-aop-pointcut/" class="post-title-link" itemprop="url">Spring AOP 포인트컷(Pointcut)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2024-04-11 09:21:20 / Modified: 11:53:57" itemprop="dateCreated datePublished" datetime="2024-04-11T09:21:20+09:00">2024-04-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+        </span>
+          , 
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="포인트컷-Pointcut-이란"><a href="#포인트컷-Pointcut-이란" class="headerlink" title="포인트컷(Pointcut)이란?"></a>포인트컷(Pointcut)이란?</h1><p>포인트컷은 Advice가 언제 실행될지 조인 포인트 중에서 골라내는 작업이라고 할 수 있다.</p>
+<p>즉, 어드바이스가 어떤 메소드들에서 실행될지 골라내는 작업이다.</p>
+<p>스프링 AOP에서는 스프링 빈의 메소드 실행에 대한 조인 포인트만 제공하기 때문에 스프링에서 포인트컷은 스프링 빈의 메소드와 연결된다고 볼 수 있다.</p>
+<br>
+
+<h1 id="포인트컷-선언"><a href="#포인트컷-선언" class="headerlink" title="포인트컷 선언"></a>포인트컷 선언</h1><p>포인트컷을 선언할 때는 다음 두 가지가 필요하다.</p>
+<ol>
+<li>시그니쳐 (Signature)</li>
+<li>포인트컷 표현식 (Pointcut Expression)</li>
+</ol>
+<p>AspectJ에서 시그니쳐란 쉽게 말해 Java의 메소드이다. 이름과 파라미터로 식별 가능한 고유한 메소드이고 꼭 <code>void</code> 타입이어야 한다.</p>
+<p>포인트컷 표현식이란 어떤 메소드가 실행될 때 이 애스펙트가 적용되어야 하는지 나타내는 표현식이다.</p>
+<p>AspectJ에서 포인트컷은 다음과 같이 선언할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;execution(* transfer(..))&quot;)</span> <span class="comment">// 포인트컷 표현식</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">anyOldTransfer</span><span class="params">()</span> &#123;&#125; <span class="comment">// Signature</span></span><br></pre></td></tr></table></figure>
+
+<p>위 포인트컷의 시그니쳐는 <code>anyOldTransfer</code>라는 이름과 0개의 파라미터로 구성돼있다.</p>
+<p>그리고 포인트컷 표현식은 <code>@Pointcut(&quot;execution(* transfer(..))&quot;)</code>가 된다.</p>
+<br>
+
+<h1 id="스프링-AOP의-포인트컷-표현식"><a href="#스프링-AOP의-포인트컷-표현식" class="headerlink" title="스프링 AOP의 포인트컷 표현식"></a>스프링 AOP의 포인트컷 표현식</h1><p>스프링 AOP에서 지원하는 AspectJ의 포인트컷 지정자 (Pointcut designator, PCD) 는 다음과 같다:</p>
+<h2 id="execution"><a href="#execution" class="headerlink" title="execution"></a><code>execution</code></h2><p>어떤 메소드가 실행될 때인지를 지정한다.</p>
+<p><code>execution([접근자] 타입 [클래스].이름(파라미터))</code></p>
+<ul>
+<li>접근자: <code>public</code>, <code>private</code> 등의 접근 제어자. 생략 가능.</li>
+<li>타입: 메소드의 리턴 타입.</li>
+<li>클래스: 패키지명을 포함한 클래스명. 생략 가능.</li>
+<li>이름: 메소드 이름.</li>
+<li>파라미터: 메소드의 파라미터 타입.<ul>
+<li><code>*</code>: 모든 타입.</li>
+<li><code>..</code>: 0개 이상의 모든 파라미터.</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;execution(public String com.baeldung.pointcutadvice.dao.FooDao.findById(Long))&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<p>예를 들어 위와 같은 포인트컷 표현식이 있다면</p>
+<p>접근자는 <code>public</code>, 리턴 타입은 <code>String</code>, 클래스는 <code>com.baeldung.pointcutadvice.dao.FooDao</code>, 메소드 이름은 <code>findById</code>, 파라미터는 <code>Long</code> 타입 1개만 갖고 있는 메소드를 지정하는 것이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;execution(* com.baeldung.pointcutadvice.dao.FooDao.*(..))&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<p>위 표현식에서는 접근자는 생략되었고 리턴 타입은 <code>*</code> 로 모든 타입이고, 클래스는 <code>com.baeldung.pointcutadvice.dao.FooDao</code>, 메소드 이름은 <code>*</code>로 모든 메소드이며 파라미터는 <code>..</code>로 갯수와 타입에 상관없이 모든 메소드를 지정하게 된다.</p>
+<h2 id="within"><a href="#within" class="headerlink" title="within"></a><code>within</code></h2><p>어떤 타입 안에 있는 메소드인지 지정한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;within(com.baeldung.pointcutadvice.dao.FooDao)&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<p>는 <code>FooDao</code> 내의 모든 메소드를 의미하고</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;within(com.baeldung..*)&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<p>는 <code>com.baeldung</code> 패키지와 그 하위의 모든 패키지의 모든 타입 안의 모든 메소드를 의미한다.</p>
+<h2 id="this-와-target"><a href="#this-와-target" class="headerlink" title="this 와 target"></a><code>this</code> 와 <code>target</code></h2><p><code>this</code>와 <code>target</code>은 AOP가 프록시를 생성할 때 CGLIB 방식인지 JDK dynamic 방식인지에 따라 선택해야 한다.</p>
+<p>만약 <code>IFooService</code>라는 인터페이스가 있고 이를 구현한 <code>FooServiceImpl</code> 클래스가 있다고 가정해보자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FooServiceImpl</span> <span class="keyword">implements</span> <span class="title class_">IFooService</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이 경우에는 스프링 AOP는 JDK dynamic 프록시를 사용하기 때문에 <code>target</code> 표현식을 사용해야 한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(target(com.xyz.IFooService))</span></span><br></pre></td></tr></table></figure>
+
+<p><code>A instanceof IFooService</code> 가 true인 모든 A의 메소드를 의미한다.</p>
+<br>
+
+<p>만약 <code>FooServiceImpl</code>가 다음처럼 아무 인터페이스도 구현하지 않고 있다면,</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FooServiceImpl</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이 경우에는 생성되는 프록시가 <code>FooServiceImpl</code>의 자식 클래스로 생성되기 때문에</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(target(com.xyz.FooServiceImpl))</span></span><br></pre></td></tr></table></figure>
+
+<p>처럼 사용해야 한다.</p>
+<h2 id="args"><a href="#args" class="headerlink" title="args"></a><code>args</code></h2><p>메소드의 파라미터로 전달된 런타임 객체의 타입이 지정된 타입일 경우에 적용된다.</p>
+<p>예를 들어 어떤 메소드의 파라미터로 <code>String</code> 타입이 전달될 때 적용하고 싶다면</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;args(java.lang.String)&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="execution과-차이점"><a href="#execution과-차이점" class="headerlink" title="execution과 차이점"></a><code>execution</code>과 차이점</h3><p><code>execution(* *(java.lang.String))</code>은 <code>String</code> 타입을 파라미터로 받는다고 선언된 메소드를 의미하고</p>
+<p><code>args(java.lang.String)</code>은 런타임에 전달된 파라미터의 타입이 <code>String</code> 타입인 메소드를 의미한다.</p>
+<p>다음과 같이 두 메소드가 있는데 하나는 <code>List</code> 타입으로 선언돼있고 하나는 <code>ArrayList</code> 타입으로 선언돼있다고 가정하자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">method</span><span class="params">(List&lt;String&gt; list)</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">method2</span><span class="params">(ArrayList&lt;String&gt; arrayList)</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>그리고 만약 <code>method(new ArrayList&lt;&gt;());</code>를 호출한다고 하면</p>
+<p>이 경우에 <code>execution(* *(java.util.ArrayList))</code>는 <code>method2</code>에만 적용되는 것이고</p>
+<p><code>args(java.util.ArrayList)</code>는 <code>method</code>와 <code>method2</code> 둘 다에 적용되는 것이다.</p>
+<h2 id="target"><a href="#target" class="headerlink" title="@target"></a><code>@target</code></h2><p>위에서 설명한 <code>target</code>과 다르다는 것을 주의해야 한다.</p>
+<p>지정한 애너테이션을 갖고 있는 클래스의 모든 메소드를 의미한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;@target(org.springframework.stereotype.Repository)&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="args-1"><a href="#args-1" class="headerlink" title="@args"></a><code>@args</code></h2><p>위에서 설명한 <code>args</code>와 다르다는 것을 주의해야 한다.</p>
+<p>메소드의 파라미터로 전달된 런타임 객체의 실제 타입이 지정된 애너테이션을 갖고 있는 클래스일 경우에 적용된다.</p>
+<p>예를 들어 어떤 메소드의 파라미터로 <code>@Entity</code>가 붙은 클래스의 객체가 전달될 때 적용하고 싶다고 가정하면</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;@args(com.baeldung.pointcutadvice.annotations.Entity)&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodsAcceptingEntities</span><span class="params">()</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>로 지정하게 되면 <code>@Entity</code>가 붙은 객체가 전달되는 모든 메소드를 의미한다.</p>
+<p>이렇게 지정한 포인트컷의 파라미터에 접근하려면 advice에서 <code>JoinPoint</code> 를 파라미터로 받아서 접근 가능하다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Before(&quot;methodsAcceptingEntities()&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">logMethodAcceptionEntityAnnotatedBean</span><span class="params">(JoinPoint jp)</span> &#123;</span><br><span class="line">    <span class="type">Object</span> <span class="variable">entity</span> <span class="operator">=</span> jp.getArgs()[<span class="number">0</span>]; <span class="comment">// @Entity가 선언된 객체</span></span><br><span class="line">    logger.info(<span class="string">&quot;Accepting beans with @Entity annotation: &quot;</span> + entity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="within-1"><a href="#within-1" class="headerlink" title="@within"></a><code>@within</code></h2><p><code>within</code>과 다르다는 점을 주의한다.</p>
+<p><code>within</code>과 거의 비슷하지만 <code>@within</code>은 지정한 애너테이션을 갖고 있는 타입의 모든 메소드를 의미한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;@within(org.springframework.stereotype.Repository)&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<p>는 아래와 동일한 표현식이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;within(@org.springframework.stereotype.Repository *)&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="annotation"><a href="#annotation" class="headerlink" title="@annotation"></a><code>@annotation</code></h2><p>지정된 애너테이션을 갖고 있는 메소드에 적용된다.</p>
+<p><code>@within</code>은 지정된 애너테이션을 갖고 있는 타입의 모든 메소드에 적용되는 것이고 <code>@annotation</code>은 지정된 애너테이션을 갖고 있는 메소드에 적용되는 차이점이 있다.</p>
+<p>예를 들어 <code>@Loggable</code>이라는 애너테이션을 만들어서 메소드에 추가한다면</p>
+<p><code>@Loggable</code>이 붙은 모든 메소드에 대해 아래와 같이 적용할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Pointcut(&quot;@annotation(com.baeldung.pointcutadvice.annotations.Loggable)&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">loggableMethods</span><span class="params">()</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Before(&quot;loggableMethods()&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">logMethod</span><span class="params">(JoinPoint jp)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">methodName</span> <span class="operator">=</span> jp.getSignature().getName();</span><br><span class="line">    logger.info(<span class="string">&quot;Executing method: &quot;</span> + methodName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="bean"><a href="#bean" class="headerlink" title="bean"></a><code>bean</code></h2><p>이 지정자는 <strong>AspectJ에는 없는 지정자</strong>로 스프링 AOP에서 자체 지원한다.</p>
+<p>지정한 빈의 모든 메소드를 의미한다. <code>*</code>를 통한 와일드카드 표현식을 지원한다.</p>
+<h2 id="이외의-PCD"><a href="#이외의-PCD" class="headerlink" title="이외의 PCD"></a>이외의 PCD</h2><p>스프링 AOP에서는 위에서 소개한 포인트컷 지정자 이외에 다른 AspectJ 지정자를 사용하면 <code>IllegalArgumentException</code>이 발생한다.</p>
+<br>
+
+<h1 id="포인트컷-조합"><a href="#포인트컷-조합" class="headerlink" title="포인트컷 조합"></a>포인트컷 조합</h1><p>포인트컷은 적용될 대상 메소드를 집합처럼 나타내는 표현식이므로 여러 포인트컷을 조합해서 집합처럼 사용할 수 있다.</p>
+<p>사용 가능한 연산자는 다음과 같다.</p>
+<ul>
+<li><code>&amp;&amp;</code> : 두 포인트컷의 교집합</li>
+<li><code>||</code> : 두 포인트컷의 합집합</li>
+<li><code>!</code> : 여집합</li>
+</ul>
+<br>
+
+<h1 id="포인트컷-공유"><a href="#포인트컷-공유" class="headerlink" title="포인트컷 공유"></a>포인트컷 공유</h1><p>규모가 큰 애플리케이션을 개발할 때는 자주 사용되는 공통 포인트컷을 묶어서 하나의 클래스로 만들 것을 추천한다.</p>
+<p>예를 들면, 아래와 같이 <code>CommonPointcuts</code>라는 클래스를 만들고</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.xyz;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.aspectj.lang.annotation.Pointcut;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonPointcuts</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * dao 패키지 밑의 모든 클래스의 모든 메소드에 적용</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@Pointcut(&quot;within(com.xyz.dao..*)&quot;)</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">inDataAccessLayer</span><span class="params">()</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * service 패키지 하위에 있는 모든 타입의 모든 메소드 지정.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * 만약 Service 빈 이름이 모두 ~Service로 끝난다면</span></span><br><span class="line"><span class="comment">     * bean(*Service)로 지정해도 좋다.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@Pointcut(&quot;execution(* com.xyz..service.*.*(..))&quot;)</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">businessService</span><span class="params">()</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Advice를 만들 때 공통 포인트컷을 사용할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Before(&quot;com.xyz.CommonPointcuts.businessService()&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">beforeBusinessServiceMethods</span><span class="params">()</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="포인트컷-잘-작성하기"><a href="#포인트컷-잘-작성하기" class="headerlink" title="포인트컷 잘 작성하기"></a>포인트컷 잘 작성하기</h1><p>어떤 메소드가 해당 포인트컷에 적합한지 찾아내는 것은 비용이 많이 드는 작업이다.</p>
+<p>특히 동적으로 생성된 빈의 메소드는 더욱더 비용이 많이 든다.</p>
+<p>그래서 AspectJ는 컴파일할 때 포인트컷을 모두 찾아내서 검사하기 쉬운 메소드 순서로 정렬한다.</p>
+<p>좋은 포인트컷을 작성하기 위해서는 이 포인트컷의 목표를 생각하고 최대한 메소드 집합의 범위를 좁혀야 한다.</p>
+<p>포인트컷 지정자(PCD)는 다음 세 그룹으로 분류할 수 있다.</p>
+<ul>
+<li>Kinded<ul>
+<li>특정 조인포인트(메소드)만 선택 : <code>execution</code></li>
+</ul>
+</li>
+<li>Scoping<ul>
+<li>조인포인트의 그룹을 선택 : <code>within</code></li>
+</ul>
+</li>
+<li>Contextual<ul>
+<li>문맥에 따라 다르게 선택 : <code>this</code>, <code>target</code>, <code>@annotation</code></li>
+</ul>
+</li>
+</ul>
+<p>포인트컷을 잘 작성하기 위해서는 최소한 <code>kinded</code>와 <code>scoping</code>을 포함해야 한다.</p>
+<p><code>Kinded</code> 지정자만 선언하거나 <code>Contextual</code> 지정자만 선언한 포인트컷은 작동은 하지만 시간, 메모리 효율성에서 성능에 영향을 줄 수 있다.</p>
+<p><code>Scoping</code> 지정자는 특정 그룹만 대상으로 하면 되기 때문에 조인포인트를 찾아내는 게 매우 빠르다.</p>
+<p><strong>즉, 잘 작성된 포인트컷은 <code>Scoping</code> 지정자를 포함한 포인트컷이다.</strong></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
