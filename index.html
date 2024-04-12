@@ -123,7 +123,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">7</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -134,7 +134,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
@@ -159,6 +159,228 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://facewise.github.io/2024/04/12/spring-method-security/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Yonghyun Kim">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="facewiseLog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | facewiseLog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2024/04/12/spring-method-security/" class="post-title-link" itemprop="url">[Spring Security] 메소드 인가 (Method Security)</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2024-04-12 10:59:11 / Modified: 16:02:34" itemprop="dateCreated datePublished" datetime="2024-04-12T10:59:11+09:00">2024-04-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+        </span>
+          , 
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Java/Spring/" itemprop="url" rel="index"><span itemprop="name">Spring</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>Spring Security 6.2.3 버전을 기준으로 작성했습니다.</p>
+</blockquote>
+<h1 id="Method-Security란"><a href="#Method-Security란" class="headerlink" title="Method Security란?"></a>Method Security란?</h1><p>스프링 시큐리티를 처음 접할 때 기본적으로 다루는 인가는 요청 URI에 대한 인가인 것 같다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line">SecurityFilterChain <span class="title function_">web</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">	http</span><br><span class="line">		.authorizeHttpRequests((authorize) -&gt; authorize</span><br><span class="line">			.requestMatchers(<span class="string">&quot;/user/**&quot;</span>).hasAuthority(<span class="string">&quot;USER&quot;</span>)</span><br><span class="line">            .requestMatchers(<span class="string">&quot;/admin/**&quot;</span>).hasAuthority(<span class="string">&quot;ADMIN&quot;</span>)</span><br><span class="line">			.anyRequest().authenticated()</span><br><span class="line">		)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> http.build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위 코드처럼 빈을 만들고 <code>requestMatchers()</code>를 사용해서 API 엔드포인트에 인가를 적용하는 방식을 처음 접하게 된다.</p>
+<p>규모가 작은 사이드 프로젝트에서는 해당 방식으로 인가를 처리해도 충분히 커버 가능하다.</p>
+<p>그리고 도메인 권한이 중요하지 않으면 크게 문제가 없다.</p>
+<p>하지만 도메인에 대한 권한을 엄격하게 관리하는 서비스이거나 대규모 프로젝트에서는</p>
+<p>API 엔드포인트의 수도 늘어나기 때문에 엔드포인트만 검사하는 것만으로는 촘촘하게 권한을 검사하기 힘들 수 있다.</p>
+<p>그래서 다음과 같은 경우에 <strong>Method Security</strong>를 사용하면 좋다:</p>
+<ul>
+<li>권한 체크 로직이 복잡해서 세분화되어야 할 경우</li>
+<li>서비스 레이어에서도 권한을 체크해야 할 경우</li>
+<li>애너테이션 방식의 코드 스타일과 AOP를 지향할 경우</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>API 레벨</th>
+<th>메소드 레벨</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>권한 수준</strong></td>
+<td>촘촘하지 않음</td>
+<td>촘촘함</td>
+</tr>
+<tr>
+<td><strong>설정 방법</strong></td>
+<td>Config 빈</td>
+<td>메소드에 선언</td>
+</tr>
+<tr>
+<td><strong>설정 스타일</strong></td>
+<td>DSL</td>
+<td>애너테이션</td>
+</tr>
+<tr>
+<td><strong>인가 표현식</strong></td>
+<td>Ant, 정규식 등</td>
+<td>SpEL</td>
+</tr>
+</tbody></table>
+<p><strong>메소드 인가</strong>는 <strong>Spring AOP</strong> 기반으로 작동한다.</p>
+<p>즉, 메소드 호출의 <strong>before</strong>와 <strong>after</strong>에 권한을 체크하고 싶은 경우 사용하면 된다.</p>
+<br>
+
+<h1 id="메소드-시큐리티-활성화"><a href="#메소드-시큐리티-활성화" class="headerlink" title="메소드 시큐리티 활성화"></a>메소드 시큐리티 활성화</h1><p>메소드 레벨 인가를 활성화하기 위해서는 <code>@Configuration</code>이 설정된 빈에 <code>@EnableMethodSecurity</code> 를 추가해주어야 한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableMethodSecurity</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SecurityConfig</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<br>
+
+<h1 id="메소드-인가의-흐름"><a href="#메소드-인가의-흐름" class="headerlink" title="메소드 인가의 흐름"></a>메소드 인가의 흐름</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyService</span> &#123;</span><br><span class="line">    <span class="meta">@PreAuthorize(&quot;hasAuthority(&#x27;permission:read&#x27;)&quot;)</span></span><br><span class="line">    <span class="meta">@PostAuthorize(&quot;returnObject.owner == authentication.name&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Customer <span class="title function_">readCustomer</span><span class="params">(String id)</span> &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위와 같은 서비스가 있다고 가정하자.</p>
+<p>그러면 <code>readCustomer()</code>라는 메소드에 대한 인가는 다음과 같은 흐름으로 적용된다.</p>
+<ol>
+<li><strong>Spring AOP</strong>는 <code>readCustomer()</code>의 프록시 메소드를 만들어서 감싼다.</li>
+<li><code>readCustomer()</code>의 프록시 메소드에서는 <code>AuthorizationManagerBeforeMethodInterceptor</code>를 호출한다.</li>
+<li><strong>인터셉터</strong>는 <code>PreAuthroizeAuthorizationManager#check()</code>를 호출한다.</li>
+<li><strong>AuthorizationManager</strong>는 <code>@PreAuthorize</code>안의 SpEL 표현식과 <code>Authentication</code>을 담은 컨텍스트를 <strong>인터셉터</strong>에 제공한다.</li>
+<li><strong>인터셉터</strong>는 컨텍스트에 담긴 <code>Authentication</code>과 표현식을 보고 권한 부여가 가능한지 체크한다.</li>
+<li>권한 체크에 통과하면 AOP는 <code>readCustomer()</code>를 호출한다.</li>
+<li>체크에 통과하지 못한다면 <code>AccessDeniedException</code>를 던진다.</li>
+<li><code>readCustomer()</code>의 호출이 끝나고 리턴되면 프록시가 <code>AuthorizationManagerAfterMethodInterceptor</code>를 호출한다.</li>
+<li><strong>인터셉터</strong>는 <code>PostAuthroizeAuthorizationManager#check()</code>를 호출한다.</li>
+<li><code>@PostAuthorize</code>안의 표현식이 통과하면 정상적인 흐름으로 종료된다.</li>
+<li>마찬가지로 통과하지 못하면 <code>AccessDeniedException</code>을 던진다.</li>
+</ol>
+<br>
+
+<h1 id="애너테이션"><a href="#애너테이션" class="headerlink" title="애너테이션"></a>애너테이션</h1><p>메소드 인가를 설정하는 방법은 여러가지가 있지만 애너테이션 방식이 제일 권장된다.</p>
+<p>애너테이션에서 권한을 검증하는 로직을 작성할 때는 여러가지 방법이 있는데</p>
+<p>이 내용은 별도의 문서로 정리하겠다.</p>
+<h2 id="PreAuthorize"><a href="#PreAuthorize" class="headerlink" title="@PreAuthorize"></a><code>@PreAuthorize</code></h2><p><code>@PreAuthorize</code>는 메소드 호출 전, 권한을 검증하고 싶을 때 사용한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BankService</span> &#123;</span><br><span class="line">	<span class="meta">@PreAuthorize(&quot;hasRole(&#x27;ADMIN&#x27;)&quot;)</span></span><br><span class="line">	<span class="keyword">public</span> Account <span class="title function_">readAccount</span><span class="params">(Long id)</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위 메소드는 호출하기 전에 <code>Authentication</code> 객체가 <code>ROLE_ADMIN</code> Role이 있는지 체크하고</p>
+<p>Role이 없다면 <code>AccessDeniedException</code>이 던져진다.</p>
+<p><code>MockUser</code>를 사용해서 테스트를 작성할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line">BankService bankService;</span><br><span class="line"></span><br><span class="line"><span class="meta">@WithMockUser(roles=&quot;ADMIN&quot;)</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">readAccountWithAdminRoleThenInvokes</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">Account</span> <span class="variable">account</span> <span class="operator">=</span> bankService.readAccount(<span class="string">&quot;1&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@WithMockUser(roles=&quot;USER&quot;)</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">readAccountWithUserRoleThenAccessDenied</span><span class="params">()</span> &#123;</span><br><span class="line">    assertThatExceptionOfType(AccessDeniedException.class).isThrownBy(</span><br><span class="line">        () -&gt; <span class="built_in">this</span>.bankService.readAccount(<span class="string">&quot;1&quot;</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="PostAuthorize"><a href="#PostAuthorize" class="headerlink" title="@PostAuthorize"></a><code>@PostAuthorize</code></h2><p><code>@PostAuthorize</code>는 메소드가 호출되고 리턴될 때 권한을 검증하고 싶을 때 사용한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BankService</span> &#123;</span><br><span class="line">	<span class="meta">@PostAuthorize(&quot;returnObject.owner == authentication.name&quot;)</span></span><br><span class="line">	<span class="keyword">public</span> Account <span class="title function_">readAccount</span><span class="params">(Long id)</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">return</span> account;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위 메소드는 리턴되는 <code>Account</code> 객체의 <code>owner</code> 프로퍼티가</p>
+<p><code>Authentication</code> 객체의 <code>name</code> 프로퍼티와 같을 때만 정상적으로 리턴되고</p>
+<p>같지 않다면 마찬가지로 <code>AccessDeniedException</code>이 발생한다.</p>
+<p>아래와 같이 테스트해볼 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line">BankService bankService;</span><br><span class="line"></span><br><span class="line"><span class="meta">@WithMockUser(username=&quot;owner&quot;)</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">readAccountWhenOwnedThenReturns</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">Account</span> <span class="variable">account</span> <span class="operator">=</span> bankService.readAccount(<span class="string">&quot;1&quot;</span>);</span><br><span class="line">    <span class="comment">// ... assertions</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@WithMockUser(username=&quot;wrong&quot;)</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">readAccountWhenNotOwnedThenAccessDenied</span><span class="params">()</span> &#123;</span><br><span class="line">    assertThatExceptionOfType(AccessDeniedException.class).isThrownBy(</span><br><span class="line">        () -&gt; <span class="built_in">this</span>.bankService.readAccount(<span class="string">&quot;1&quot;</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="PreFilter"><a href="#PreFilter" class="headerlink" title="@PreFilter"></a><code>@PreFilter</code></h2><p><code>@PreFilter</code>는 메소드 호출 전 파라미터로 전달되는 객체들을 인가를 통해 필터링하고 싶을 때 사용한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BankService</span> &#123;</span><br><span class="line">	<span class="meta">@PreFilter(&quot;filterObject.owner == authentication.name&quot;)</span></span><br><span class="line">	<span class="keyword">public</span> List&lt;Account&gt; <span class="title function_">updateAccounts</span><span class="params">(Account... accounts)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> accounts;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위 메소드에서 파라미터로 전달되는 <code>accounts</code> 안에는</p>
+<p><code>owner</code> 프로퍼티가 <code>Authentication</code>의 <code>name</code> 프로퍼티와 같은 객체만 필터링돼서 전달된다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line">BankService bankService;</span><br><span class="line"></span><br><span class="line"><span class="meta">@WithMockUser(username=&quot;owner&quot;)</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">updateAccountsWhenOwnedThenReturns</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">Account</span> <span class="variable">ownedBy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Account</span>(<span class="string">&quot;owner&quot;</span>);</span><br><span class="line">    <span class="type">Account</span> <span class="variable">notOwnedBy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Account</span>(<span class="string">&quot;not owner&quot;</span>);</span><br><span class="line">    List&lt;Account&gt; updated = bankService.updateAccounts(ownedBy, notOwnedBy);</span><br><span class="line">    assertThat(updated).containsOnly(ownedBy);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위 테스트 코드에서 <code>updateAccounts()</code>의 파라미터로 2개의 <code>Account</code> 객체를 전달했지만,</p>
+<p><code>@PreFilter</code>로 인해 실제 메소드 내부에 전달되는 파라미터는 <code>ownedBy</code> 객체만 전달된다.</p>
+<p><code>@PreFilter</code>로 필터링할 수 있는 파라미터 타입은 배열, <code>Collection</code>, <code>Map</code>, <code>Stream</code>이다.<br>(<code>Stream</code>은 닫히지 않은 상태여야 한다.)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PreFilter</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateAccounts</span><span class="params">(Account[] accounts)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@PreFilter</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateAccounts</span><span class="params">(Collection&lt;Account&gt; accounts)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@PreFilter</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateAccounts</span><span class="params">(Map&lt;String, Account&gt; accounts)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@PreFilter</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">updateAccounts</span><span class="params">(Stream&lt;Account&gt; accounts)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="PostFilter"><a href="#PostFilter" class="headerlink" title="@PostFilter"></a><code>@PostFilter</code></h2><p><code>@PostFilter</code>는 메소드가 리턴하는 객체들을 인가를 통해 필터링하고 싶을 때 사용한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BankService</span> &#123;</span><br><span class="line">	<span class="meta">@PostFilter(&quot;filterObject.owner == authentication.name&quot;)</span></span><br><span class="line">	<span class="keyword">public</span> Collection&lt;Account&gt; <span class="title function_">readAccounts</span><span class="params">(String... ids)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> accounts;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위 코드는 리턴되는 <code>accounts</code> 컬렉션에서 객체들의 <code>owner</code> 프로퍼티가</p>
+<p><code>Authentication</code>의 <code>name</code> 프로퍼티와 같은 객체만 필터링되어 리턴된다는 의미이다.</p>
+<p>아래와 같은 테스트코드로 확인해볼 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line">BankService bankService;</span><br><span class="line"></span><br><span class="line"><span class="meta">@WithMockUser(username=&quot;owner&quot;)</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">readAccountsWhenOwnedThenReturns</span><span class="params">()</span> &#123;</span><br><span class="line">    Collection&lt;Account&gt; accounts = bankService.updateAccounts(<span class="string">&quot;owner&quot;</span>, <span class="string">&quot;not-owner&quot;</span>);</span><br><span class="line">    assertThat(accounts).hasSize(<span class="number">1</span>);</span><br><span class="line">    assertThat(accounts.get(<span class="number">0</span>).getOwner()).isEqualTo(<span class="string">&quot;owner&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>@PostFilter</code>로 필터링할 수 있는 리턴 타입은 배열, <code>Collection</code>, <code>Map</code>, <code>Stream</code>이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PostFilter</span></span><br><span class="line"><span class="keyword">public</span> Account[] readAccounts()</span><br><span class="line"></span><br><span class="line"><span class="meta">@PostFilter</span></span><br><span class="line"><span class="keyword">public</span> Collection&lt;Account&gt; <span class="title function_">readAccounts</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@PostFilter</span></span><br><span class="line"><span class="keyword">public</span> Map&lt;String, Account&gt; <span class="title function_">readAccounts</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@PostFilter</span></span><br><span class="line"><span class="keyword">public</span> Stream&lt;Account&gt; <span class="title function_">readAccounts</span><span class="params">()</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>주의사항</strong></p>
+<blockquote>
+<p><code>@PreFilter</code>나 <code>@PostFilter</code>를 사용해서 사이즈가 큰 컬렉션을 필터링하는 작업은<br>메모리를 매우 많이 소모한다. 자칫 잘못하면 OOM이 발생할 수도 있다.<br>그렇기 때문에 사이즈가 큰 컬렉션을 가져와서 필터링하기보다는<br>데이터를 가져올 때 먼저 필터링해서 가져오는 방식을 택해야 한다.<br>즉, SQL이나 NoSQL로 데이터를 가져올 때부터 적절한 조건식으로 데이터를 먼저 필터링해야 한다.</p>
+</blockquote>
+<h2 id="기타-애너테이션"><a href="#기타-애너테이션" class="headerlink" title="기타 애너테이션"></a>기타 애너테이션</h2><h3 id="Secured"><a href="#Secured" class="headerlink" title="@Secured"></a><code>@Secured</code></h3><p><code>@Secured</code>는 <code>@PreAuthorize</code>의 레거시 버전이며 사용하려면</p>
+<p><code>@EnableMethodSecurity(securedEnabled = true)</code> 로 변경해야 한다.</p>
+<h3 id="JSR-250-애너테이션"><a href="#JSR-250-애너테이션" class="headerlink" title="JSR-250 애너테이션"></a>JSR-250 애너테이션</h3><p>JSR-250 애너테이션에는 <code>@RolseAllowed</code>, <code>@PermitAll</code>, <code>@DenyAll</code> 등이 있으며 사용하려면</p>
+<p><code>@EnableMethodSecurity(jsr250Enabled = true)</code> 로 변경해야 한다.</p>
+<h2 id="클래스-레벨-애너테이션"><a href="#클래스-레벨-애너테이션" class="headerlink" title="클래스 레벨 애너테이션"></a>클래스 레벨 애너테이션</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="meta">@PreAuthorize(&quot;hasAuthority(&#x27;ROLE_USER&#x27;)&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserApiController</span> &#123;</span><br><span class="line">    <span class="meta">@GetMapping(&quot;/endpoint&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">endpoint</span><span class="params">()</span> &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위와 같이 클래스 레벨로 애너테이션을 추가할 수 있고 해당 클래스의 모든 메소드에 적용된다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="meta">@PreAuthorize(&quot;hasAuthority(&#x27;ROLE_USER&#x27;)&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserApiController</span> &#123;</span><br><span class="line">    <span class="meta">@GetMapping(&quot;/admin&quot;)</span></span><br><span class="line">    <span class="meta">@PreAuthorize(&quot;hasAuthority(&#x27;ROLE_ADMIN&#x27;)&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">admin</span><span class="params">()</span> &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위처럼 예외로 다른 표현식을 사용해야할 경우에는 해당 메소드에 애너테이션을 오버라이드할 수 있다.</p>
+<h2 id="메타-애너테이션-커스텀-애너테이션"><a href="#메타-애너테이션-커스텀-애너테이션" class="headerlink" title="메타 애너테이션 (커스텀 애너테이션)"></a>메타 애너테이션 (커스텀 애너테이션)</h2><p>위에서 소개한 <code>@PreAuthorize</code>, <code>@PostAuthorize</code> 등의 애너테이션에 똑같은 표현식을</p>
+<p>계속 적는 것은 분명 가독성과 유지보수 관점에서 좋지 않다.</p>
+<p>이를 위해 메타 애너테이션이라 불리는 커스텀 애너테이션을 만들어서 대신 사용할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Target(&#123; ElementType.METHOD, ElementType.TYPE &#125;)</span></span><br><span class="line"><span class="meta">@Retention(RetentionPolicy.RUNTIME)</span></span><br><span class="line"><span class="meta">@PreAuthorize(&quot;hasRole(&#x27;ADMIN&#x27;)&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> IsAdmin &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위처럼 애너테이션 인터페이스를 만들고</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BankService</span> &#123;</span><br><span class="line">	<span class="meta">@IsAdmin</span></span><br><span class="line">	<span class="keyword">public</span> Account <span class="title function_">readAccount</span><span class="params">(Long id)</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>와 같이 커스텀 애너테이션으로 <code>@PreAuthorize(&quot;hasRole(&#39;ADMIN&#39;)&quot;)</code>와 같은 효과를 낼 수 있다.</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
